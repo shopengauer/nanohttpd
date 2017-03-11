@@ -51,7 +51,38 @@ public class NanoServer extends NanoHTTPD implements ApplicationContextAware {
 
     @Override
     public Response serve(IHTTPSession session) {
-//        BufferedReader br = null;
+
+        if(session.getMethod() == Method.GET){
+            FileInputStream fin= null;
+            try {
+                fin = new FileInputStream("/home/vasiliy/IdeaProjects/edu/nanohttpd/src/main/resources/index.html");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            };
+            return newChunkedResponse(Response.Status.OK,MIME_HTML,fin);
+        }
+
+        if(session.getMethod().equals(Method.POST)){
+            Map<String, String> files = new HashMap<String, String>();
+           Method method = session.getMethod();
+           if (Method.PUT.equals(method) || Method.POST.equals(method)) {
+               try {
+                   session.parseBody(files);
+               } catch (IOException ioe) {
+                   return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
+               } catch (ResponseException re) {
+                   return newFixedLengthResponse(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
+               }
+           }
+        }
+
+
+        return newFixedLengthResponse(serviceBean.toString());
+
+
+
+
+        //        BufferedReader br = null;
 //        StringBuilder sb = new StringBuilder();
 //        try {
 //
@@ -99,13 +130,8 @@ public class NanoServer extends NanoHTTPD implements ApplicationContextAware {
            String b = session.getParms().get("b");
             System.out.println(serviceBean);
           return newFixedLengthResponse(String.valueOf(Integer.parseInt(a) + Integer.parseInt(b))); // Or postParameter.
-          //  return newFixedLengthResponse(serviceBean.toString()); // Or postParameter.*/
+            return newFixedLengthResponse(serviceBean.toString()); // Or postParameter.*/
       // }
-        try {
-            return newFixedLengthResponse(new BufferedReader(new FileReader("/home/vasiliy/IdeaProjects/edu/nanohttpd/src/main/resources/index.html")).toString());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return newFixedLengthResponse("Error");
+
     }
 }
